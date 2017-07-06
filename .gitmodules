@@ -1,0 +1,3 @@
+[submodule "Assets/AssetUpdater"]
+	path = Assets/AssetUpdater
+	url = https://sNaticY@github.com/sNaticY/assetUpdater-core.git
