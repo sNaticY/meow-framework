@@ -1,3 +1,6 @@
 [submodule "Assets/AssetUpdater"]
 	path = Assets/AssetUpdater
 	url = https://sNaticY@github.com/sNaticY/assetUpdater-core.git
+[submodule "Assets/AssetLoader"]
+	path = Assets/AssetLoader
+	url = https://sNaticY@github.com/sNaticY/assetLoader-core.git
