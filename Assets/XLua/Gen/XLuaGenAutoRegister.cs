@@ -21,6 +21,8 @@ namespace XLua.CSObjectWrap
         {
 		    XLua.LuaEnv.AddIniter((luaenv, translator) => {
 			    
+				translator.DelayWrapLoader(typeof(Meow.Framework.LuaBehaviour), MeowFrameworkLuaBehaviourWrap.__Register);
+				
 				
 			});
 		}

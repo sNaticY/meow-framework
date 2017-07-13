@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Configuration;
 using Meow.AssetLoader;
 using Meow.AssetUpdater;
 using UnityEngine;
@@ -22,10 +23,12 @@ namespace Meow.Framework
         public Text TotalSizeText;
         public Slider TotalSlider;
         public Text AssetBundleCountText;
+        public Button StartGameButton;
 
         private MainLoader _loader;
         private MainUpdater _updater;
         private LuaLoader _luaLoader;
+        private ResourceLoader _resourceLoader;
 
         private UpdateOperation _updateOperation;
         private int _totalCount;
@@ -33,6 +36,8 @@ namespace Meow.Framework
         private void Awake()
         {
             _mainGames.Add(ProjectName, this);
+            StartGameButton.gameObject.SetActive(false);
+            DontDestroyOnLoad(gameObject);
         }
 
         private IEnumerator Start()
@@ -64,6 +69,15 @@ namespace Meow.Framework
             yield return _loader.Initialize(_updater.GetAssetbundleRootPath(true), _updater.GetManifestName());
             
             yield return _luaLoader.Initialize(_loader, LuaBundleName, LuaScriptRootFolderName);
+            
+            
+            _resourceLoader = new ResourceLoader(_loader, _updater);
+            
+            StartGameButton.gameObject.SetActive(true);
+            StartGameButton.onClick.AddListener(() =>
+            {
+                StartCoroutine(_resourceLoader.LoadLevelAsync("Assets/Demo/Scenes/01Main.unity"));
+            });
         }
 
         private void Update()
