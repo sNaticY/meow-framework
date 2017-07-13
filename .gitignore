@@ -34,3 +34,5 @@ sysinfo.txt
 *.unitypackage
 AssetBundlePool
 AssetBundleServer
+Assets/StreamingAssets/MeowDemo
+MeowDemo.meta
