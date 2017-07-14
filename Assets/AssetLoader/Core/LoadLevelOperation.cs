@@ -8,7 +8,8 @@ namespace Meow.AssetLoader.Core
         private LoadBundleOperation _loadBundleOperation;
         private AsyncOperation _loadLevelOperation;
 
-        private MainLoader _loader;
+        private readonly string _assetbundlePath;
+        private readonly MainLoader _loader;
         private readonly string _levelName;
         private readonly bool _isAddtive;
 
@@ -19,8 +20,7 @@ namespace Meow.AssetLoader.Core
             _loader = loader;
             _levelName = levelName;
             _isAddtive = isAdditive;
-            _loadBundleOperation = new LoadBundleOperation(_loader, assetbundlePath);
-            _loader.StartCoroutine(_loadBundleOperation);
+            _assetbundlePath = assetbundlePath;
             IsDone = false;
         }
 
@@ -28,6 +28,11 @@ namespace Meow.AssetLoader.Core
         {
             get
             {
+                if (_loadBundleOperation == null)
+                {
+                    _loadBundleOperation = new LoadBundleOperation(_loader, _assetbundlePath);
+                    _loader.StartCoroutine(_loadBundleOperation);
+                }
                 if (_loadBundleOperation.IsDone)
                 {
                     if (_loadLevelOperation == null)
@@ -51,10 +56,7 @@ namespace Meow.AssetLoader.Core
                                 SceneManager.LoadSceneAsync(_levelName, _isAddtive ? LoadSceneMode.Additive : LoadSceneMode.Single);
                         }
                     }
-                    if (_loadLevelOperation.isDone)
-                    {
-                        IsDone = true;
-                    }
+                    IsDone = _loadLevelOperation.isDone;
                 }
                 return !IsDone;
             }
