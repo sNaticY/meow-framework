@@ -18,7 +18,7 @@ namespace Meow.Framework
         {
             LuaEnv = new LuaEnv();
             LuaScripts = new Dictionary<string, TextAsset>();
-            var operation = _loader.LoadBundle(luaScriptBundlePath);
+            var operation = _loader.GetLoadBundleOperation(luaScriptBundlePath);
             yield return operation;
 
             var assets = operation.GetAllAssets<TextAsset>();
@@ -37,6 +37,13 @@ namespace Meow.Framework
         public string GetLuaScriptString(string luaPath)
         {
             return LuaScripts[luaPath.ToLower()].text;
+        }
+
+        public object[] DoString(string luaFileName, string chunkName)
+        {
+            var luaString = GetLuaScriptString(luaFileName);
+            var result = LuaEnv.DoString(luaString, chunkName);
+            return result;
         }
 
         public void UpdateGCTick()

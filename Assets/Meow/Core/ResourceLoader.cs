@@ -1,13 +1,14 @@
 ﻿using Meow.AssetLoader;
 using Meow.AssetLoader.Core;
 using Meow.AssetUpdater;
+using UnityEngine;
 
 namespace Meow.Framework
 {
     public class ResourceLoader
     {
-        private MainLoader _loader;
-        private MainUpdater _updater;
+        private readonly MainLoader _loader;
+        private readonly MainUpdater _updater;
         
         public ResourceLoader(MainLoader loader, MainUpdater updater)
         {
@@ -17,8 +18,17 @@ namespace Meow.Framework
 
         public LoadLevelOperation LoadLevelAsync(string levelPath, bool isAdditive = false)
         {
-            var bundleName = _updater.GetAssetbundleNameByAssetPath(levelPath.ToLower());
-            return _loader.LoadLevel(bundleName, levelPath, isAdditive);
+            var bundlePath = _updater.GetAssetbundlePathByAssetPath(levelPath);
+            var op = _loader.GetLoadLevelOperation(bundlePath, levelPath, isAdditive);
+            _loader.StartCoroutine(op);
+            return op;
+        }
+
+        public LoadAssetOperation<GameObject> LoadGameObject(string assetPath)
+        {
+            var op = new LoadAssetOperation<GameObject>(_loader, _updater, assetPath);
+            _loader.StartCoroutine(op);
+            return op;
         }
     }
 }
