@@ -56,11 +56,11 @@ namespace Meow.Framework
             
             _luaLoader = new LuaLoader();
             
+            _updater.Initialize(RemoteUrl, ProjectName, VersionFileName);
+            
             yield return _updater.LoadAllVersionFiles();
 		
             yield return _updater.UpdateFromStreamingAsset();
-            
-            _updater.Initialize(RemoteUrl, ProjectName, VersionFileName);
             
             _updateOperation = _updater.UpdateFromRemoteAsset();
             _totalCount = _updateOperation.RemainBundleCount;
@@ -70,13 +70,12 @@ namespace Meow.Framework
             
             yield return _luaLoader.Initialize(_loader, LuaBundleName, LuaScriptRootFolderName);
             
-            
             _resourceLoader = new ResourceLoader(_loader, _updater);
             
             StartGameButton.gameObject.SetActive(true);
             StartGameButton.onClick.AddListener(() =>
             {
-                StartCoroutine(_resourceLoader.LoadLevelAsync("Assets/Demo/Scenes/01Main.unity"));
+                _resourceLoader.LoadLevelAsync("Assets/Demo/Scenes/01Main.unity");
             });
         }
 
@@ -94,13 +93,16 @@ namespace Meow.Framework
             }
         }
 
-        public static object[] DoLuaString(string projectName, string luaFileName, string chunkName)
+        public static LuaLoader GetLuaLoader(string projectName)
         {
             var mainGame = _mainGames[projectName];
-            var luaLoader = mainGame._luaLoader;
-            var luaString = luaLoader.GetLuaScriptString(luaFileName);
-            var result = luaLoader.LuaEnv.DoString(luaString, chunkName);
-            return result;
+            return mainGame._luaLoader;
+        }
+
+        public static ResourceLoader GetResourceLoader(string projectName)
+        {
+            var mainGame = _mainGames[projectName];
+            return mainGame._resourceLoader;
         }
     }
 
