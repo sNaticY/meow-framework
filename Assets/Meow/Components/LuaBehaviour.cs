@@ -59,7 +59,7 @@ namespace Meow.Framework
             }
         }
 
-        void Start()
+        private void Start()
         {
             if (!_isInitialized)
             {
@@ -72,7 +72,7 @@ namespace Meow.Framework
             }
         }
 
-        void Update()
+        private void Update()
         {
             if (_updateFunc != null)
             {
@@ -80,7 +80,7 @@ namespace Meow.Framework
             }
         }
 
-        void OnEnable()
+        private void OnEnable()
         {
             if (_onEnableFunc != null)
             {
@@ -88,13 +88,13 @@ namespace Meow.Framework
             }
         }
 
-        void OnDisable()
+        private void OnDisable()
         {
             if (_onDisableFunc != null)
                 _onDisableFunc.Invoke();
         }
 
-        void OnDestroy()
+        private void OnDestroy()
         {
             if (_onDestroyFunc != null)
             {
@@ -103,20 +103,16 @@ namespace Meow.Framework
             ScriptEnv.Dispose();
         }
 
-        void _Initialize()
+        private void _Initialize()
         {
             // 获取ScriptEnv
-            
-            object[] result = MainGame.DoLuaString(ProjectName, LuaPath, "LuaBehaviour");
-            Debug.Assert(result.Length > 0,
-                string.Format("Lua controller file must return something! ({0}.lua)", LuaPath));
-            LuaFunction rf = result[0] as LuaFunction;
-            object[] results = rf.Call();
-            Debug.Assert(results.Length > 0,
-                string.Format("Lua controller class must return something! ({0}.lua)", LuaPath));
+            var result = MainGame.DoLuaString(ProjectName, LuaPath, "LuaBehaviour");
+            Debug.Assert(result.Length > 0, string.Format("Lua controller file must return something! ({0}.lua)", LuaPath));
+            var rf = result[0] as LuaFunction;
+            var results = rf.Call();
+            Debug.Assert(results.Length > 0, string.Format("Lua controller class must return something! ({0}.lua)", LuaPath));
             ScriptEnv = results[0] as LuaTable;
-            Debug.Assert(ScriptEnv != null,
-                string.Format("Lua controller class must return a table! ({0}.lua)", LuaPath));
+            Debug.Assert(ScriptEnv != null, string.Format("Lua controller class must return a table! ({0}.lua)", LuaPath));
 
             // 获取相应方法
             ScriptEnv.Get("Awake", out _awakeFunc);
@@ -128,6 +124,9 @@ namespace Meow.Framework
 
             // 注入GameObject
             ScriptEnv.Set("gameObject", this.gameObject);
+            
+            // 注入MonoBehaviour本身
+            ScriptEnv.Set("behaviour", this);
 
             if (Injections.Length >= 0)
             {
