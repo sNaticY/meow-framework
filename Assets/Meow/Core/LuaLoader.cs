@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using XLua;
 using Meow.AssetLoader;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Meow.Framework
 {
@@ -36,6 +37,7 @@ namespace Meow.Framework
         
         public string GetLuaScriptString(string luaPath)
         {
+            Debug.AssertFormat(LuaScripts.ContainsKey(luaPath.ToLower()), "Can't find lua file [{0}]", luaPath);
             return LuaScripts[luaPath.ToLower()].text;
         }
 
