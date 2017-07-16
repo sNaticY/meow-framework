@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using Meow.AssetLoader;
 using Meow.AssetUpdater;
 using UnityEngine;
@@ -17,6 +18,7 @@ namespace Meow.Framework
         public string VersionFileName;
         public string LuaBundleName;
         public string LuaScriptRootFolderName;
+        public string MainSceneRootFolderPath;
 
         public Text SingleSizeText;
         public Slider SingleSlider;
@@ -75,7 +77,7 @@ namespace Meow.Framework
             StartGameButton.gameObject.SetActive(true);
             StartGameButton.onClick.AddListener(() =>
             {
-                _resourceLoader.LoadLevelAsync("Assets/Demo/Scenes/01Main.unity");
+                _resourceLoader.LoadLevelAsync(Path.Combine(MainSceneRootFolderPath, "01Main.unity"));
             });
         }
 
@@ -85,11 +87,16 @@ namespace Meow.Framework
             
             if (_updateOperation != null)
             {
-                SingleSizeText.text = _updateOperation.SingleDownloadedSize + " / " + _updateOperation.SingleSize;
-                SingleSlider.value = _updateOperation.SingleProgress;
-                TotalSizeText.text = _updateOperation.TotalownloadedSize + " / " + _updateOperation.TotalSize;
-                TotalSlider.value = _updateOperation.TotalProgress;
-                AssetBundleCountText.text = ( _totalCount - _updateOperation.RemainBundleCount ) + " / " + _totalCount;
+                if(SingleSizeText != null)
+                    SingleSizeText.text = _updateOperation.SingleDownloadedSize + " / " + _updateOperation.SingleSize;
+                if(SingleSlider != null)
+                    SingleSlider.value = _updateOperation.SingleProgress;
+                if(TotalSizeText != null)
+                    TotalSizeText.text = _updateOperation.TotalownloadedSize + " / " + _updateOperation.TotalSize;
+                if(TotalSlider != null)
+                    TotalSlider.value = _updateOperation.TotalProgress;
+                if(AssetBundleCountText != null)
+                    AssetBundleCountText.text = ( _totalCount - _updateOperation.RemainBundleCount ) + " / " + _totalCount;
             }
         }
 
