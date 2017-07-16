@@ -37,3 +37,7 @@ AssetBundleServer
 Assets/StreamingAssets/MeowDemo
 MeowDemo.meta
 Demo.meta
+Assets/TinyGames
+TinyGames.meta
+StreamingAssets.meta
+EditorBuildSettings.asset
