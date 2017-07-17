@@ -52,14 +52,16 @@ namespace Meow.AssetLoader
             }
         }
 
-        public LoadBundleOperation LoadBundle(string bundlePath)
+        public LoadBundleOperation GetLoadBundleOperation(string bundlePath)
         {
-            return new LoadBundleOperation(this, bundlePath);
+            var op = new LoadBundleOperation(this, bundlePath);
+            return op;
         }
 
-        public LoadLevelOperation LoadLevel(string bundlePath, string levelName, bool isAddtive)
+        public LoadLevelOperation GetLoadLevelOperation(string bundlePath, string levelName, bool isAddtive)
         {
-            return new LoadLevelOperation(this, bundlePath, levelName, isAddtive);
+            var op = new LoadLevelOperation(this, bundlePath, levelName, isAddtive);
+            return op;
         }
     }
 }

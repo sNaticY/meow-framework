@@ -4,11 +4,14 @@ namespace Meow.AssetLoader.Core
 {
     public class LoadManifestOperation : CustomYieldInstruction
     {
+        private string _manifestPath;
         private WWW _www;
+        
+        public bool IsDone { get; private set; }
         
         public LoadManifestOperation(string manifestPath)
         {
-            _www = new WWW(manifestPath);
+            _manifestPath = manifestPath;
         }
 
         public AssetBundleManifest Manifest
@@ -20,7 +23,12 @@ namespace Meow.AssetLoader.Core
         {
             get
             {
-                return !_www.isDone;
+                if (_www == null)
+                {
+                    _www = new WWW(_manifestPath);
+                }
+                IsDone = _www.isDone;
+                return !IsDone;
             }
         }
     }
