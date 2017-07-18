@@ -18,7 +18,7 @@ namespace Meow.Framework
         public string VersionFileName;
         public string LuaBundleName;
         public string LuaScriptRootFolderName;
-        public string MainSceneRootFolderPath;
+        public string SceneRootFolderPath;
 
         public Text SingleSizeText;
         public Slider SingleSlider;
@@ -77,7 +77,7 @@ namespace Meow.Framework
             StartGameButton.gameObject.SetActive(true);
             StartGameButton.onClick.AddListener(() =>
             {
-                _resourceLoader.LoadLevelAsync(Path.Combine(MainSceneRootFolderPath, "01Main.unity"));
+                _resourceLoader.LoadLevelAsync(Path.Combine(SceneRootFolderPath, "01Main.unity"));
             });
         }
 
