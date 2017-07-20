@@ -29,6 +29,12 @@ namespace Meow.Framework
                 callback.Call(go, args);
             });
         }
+
+        public void ClearClick(GameObject go)
+        {
+            Button button = go.GetComponent<Button>();
+            button.onClick.RemoveAllListeners();
+        }
         
         public LoadAssetOperation<GameObject> LoadGameObjectAsync(string assetPath, LuaFunction callback, LuaTable args)
         {
