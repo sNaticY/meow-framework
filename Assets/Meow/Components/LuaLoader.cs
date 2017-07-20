@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using XLua;
 using Meow.AssetLoader;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Meow.Framework
 {
-    public class LuaLoader
+    public class LuaLoader : MonoBehaviour
     {
         private const float _gcInternal = 1f;
         private float _lastGCTime = 0;
@@ -15,7 +14,7 @@ namespace Meow.Framework
         public LuaEnv LuaEnv { get; private set; }
         private Dictionary<string, TextAsset> LuaScripts { get; set; }
 
-        public IEnumerator Initialize(MainLoader _loader, string luaScriptBundlePath, string luaScriptsRootPath)
+        public IEnumerator Initialize(string projectName, MainLoader _loader, string luaScriptBundlePath, string luaScriptsRootPath)
         {
             LuaEnv = new LuaEnv();
             LuaScripts = new Dictionary<string, TextAsset>();
@@ -27,18 +26,20 @@ namespace Meow.Framework
             {
                 var firstIndex = luaAssets.Key.LastIndexOf(luaScriptsRootPath.ToLower()) + luaScriptsRootPath.Length;
                 var luaPath = luaAssets.Key.Substring(firstIndex + 1, luaAssets.Key.Length - firstIndex - 1 - 8);
+                Debug.AssertFormat(!LuaScripts.ContainsKey(luaPath), "lua script file name [{0}] is duplicated", luaPath);
                 LuaScripts.Add(luaPath, luaAssets.Value);
             }
 
-            LuaEnv.AddLoader((ref string filepath) => LuaScripts[filepath.ToLower()].bytes);
+            LuaEnv.AddLoader(
+                (ref string filepath) =>
+                {
+                    var filePath = filepath.ToLower();
+                    Debug.AssertFormat(LuaScripts.ContainsKey(filePath), "lua script [{0}] not exist", filePath);
+                    return LuaScripts[filePath].bytes;
+                });
             
-            LuaEnv.DoString(LuaScripts["main"].bytes);
-        }
-        
-        public string GetLuaScriptString(string luaPath)
-        {
-            Debug.AssertFormat(LuaScripts.ContainsKey(luaPath.ToLower()), "Can't find lua file [{0}]", luaPath);
-            return LuaScripts[luaPath.ToLower()].text;
+            LuaFunction mainLuaFunction = LuaEnv.DoString(LuaScripts["main"].bytes)[0] as LuaFunction;
+            mainLuaFunction.Call(projectName);
         }
 
         public object[] DoString(string luaFileName, string chunkName)
@@ -47,10 +48,16 @@ namespace Meow.Framework
             var result = LuaEnv.DoString(luaString, chunkName);
             return result;
         }
-
-        public void UpdateGCTick()
+        
+        private string GetLuaScriptString(string luaPath)
         {
-            if (Time.time - _lastGCTime > _gcInternal)
+            Debug.AssertFormat(LuaScripts.ContainsKey(luaPath.ToLower()), "Can't find lua file [{0}]", luaPath);
+            return LuaScripts[luaPath.ToLower()].text;
+        }
+        
+        private void Update()
+        {
+            if (LuaEnv != null && Time.time - _lastGCTime > _gcInternal)
             {
                 LuaEnv.Tick();
                 _lastGCTime = Time.time;

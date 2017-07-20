@@ -127,6 +127,9 @@ namespace Meow.Framework
             
             // 注入MonoBehaviour本身
             ScriptEnv.Set("behaviour", this);
+            
+            // 注入MainGame实例
+            ScriptEnv.Set("mainGame", MainGame.GetInstance(ProjectName));
 
             if (Injections.Length >= 0)
             {
