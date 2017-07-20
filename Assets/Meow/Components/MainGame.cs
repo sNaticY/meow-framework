@@ -1,14 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using Meow.AssetLoader;
+using Meow.AssetLoader.Core;
 using Meow.AssetUpdater;
 using UnityEngine;
 using UnityEngine.UI;
+using XLua;
 
 namespace Meow.Framework
 {
+    [LuaCallCSharp]
     public class MainGame : MonoBehaviour
     {
         private static readonly Dictionary<string, MainGame> _mainGames = new Dictionary<string, MainGame>();
@@ -30,7 +32,7 @@ namespace Meow.Framework
         private MainLoader _loader;
         private MainUpdater _updater;
         private LuaLoader _luaLoader;
-        private ResourceLoader _resourceLoader;
+        private LuaHelper _luaHelper;
 
         private UpdateOperation _updateOperation;
         private int _totalCount;
@@ -39,29 +41,20 @@ namespace Meow.Framework
         {
             _mainGames.Add(ProjectName, this);
             StartGameButton.gameObject.SetActive(false);
+            
+            _updater = gameObject.AddComponent<MainUpdater>();
+            _loader = gameObject.AddComponent<MainLoader>();
+            _luaLoader = gameObject.AddComponent<LuaLoader>();
+            _luaHelper = gameObject.AddComponent<LuaHelper>();
+            
             DontDestroyOnLoad(gameObject);
         }
 
         private IEnumerator Start()
         {
-            _updater = gameObject.GetComponent<MainUpdater>();
-            if (_updater == null)
-            {
-                _updater = gameObject.AddComponent<MainUpdater>();
-            }
-            
-            _loader = gameObject.GetComponent<MainLoader>();
-            if (_loader == null)
-            {
-                _loader = gameObject.AddComponent<MainLoader>();
-            }
-            
-            _luaLoader = new LuaLoader();
-            
             _updater.Initialize(RemoteUrl, ProjectName, VersionFileName);
             
             yield return _updater.LoadAllVersionFiles();
-		
             yield return _updater.UpdateFromStreamingAsset();
             
             _updateOperation = _updater.UpdateFromRemoteAsset();
@@ -70,21 +63,19 @@ namespace Meow.Framework
             
             yield return _loader.Initialize(_updater.GetAssetbundleRootPath(true), _updater.GetManifestName());
             
-            yield return _luaLoader.Initialize(_loader, LuaBundleName, LuaScriptRootFolderName);
-            
-            _resourceLoader = new ResourceLoader(_loader, _updater);
+            yield return _luaLoader.Initialize(ProjectName, _loader, LuaBundleName, LuaScriptRootFolderName);
+
+            _luaHelper.Initialize(_loader, _updater);
             
             StartGameButton.gameObject.SetActive(true);
             StartGameButton.onClick.AddListener(() =>
             {
-                _resourceLoader.LoadLevelAsync(Path.Combine(SceneRootFolderPath, "01Main.unity"));
+                LoadLevelAsync(Path.Combine(SceneRootFolderPath, "01Main.unity"));
             });
         }
 
         private void Update()
         {
-            _luaLoader.UpdateGCTick();
-            
             if (_updateOperation != null)
             {
                 if(SingleSizeText != null)
@@ -99,18 +90,33 @@ namespace Meow.Framework
                     AssetBundleCountText.text = ( _totalCount - _updateOperation.RemainBundleCount ) + " / " + _totalCount;
             }
         }
+        
+        public LoadLevelOperation LoadLevelAsync(string levelPath, bool isAdditive = false)
+        {
+            var bundlePath = _updater.GetAssetbundlePathByAssetPath(levelPath);
+            var op = _loader.GetLoadLevelOperation(bundlePath, levelPath, isAdditive);
+            StartCoroutine(op);
+            return op;
+        }
+
+        public static MainGame GetInstance(string projectName)
+        {
+            Debug.AssertFormat(_mainGames.ContainsKey(projectName), "Cannot find main game with project name [{0}]", projectName);
+            return _mainGames[projectName];
+        }
 
         public static LuaLoader GetLuaLoader(string projectName)
         {
-            var mainGame = _mainGames[projectName];
+            var mainGame = GetInstance(projectName);
             return mainGame._luaLoader;
         }
 
-        public static ResourceLoader GetResourceLoader(string projectName)
+        public static LuaHelper GetLuaHelper(string projectName)
         {
-            var mainGame = _mainGames[projectName];
-            return mainGame._resourceLoader;
+            var mainGame = GetInstance(projectName);
+            return mainGame._luaHelper;
         }
+
     }
 
 }
