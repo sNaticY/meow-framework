@@ -5,6 +5,7 @@ using Meow.AssetLoader;
 using Meow.AssetLoader.Core;
 using Meow.AssetUpdater;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using XLua;
 
@@ -21,6 +22,9 @@ namespace Meow.Framework
         public string LuaBundleName;
         public string LuaScriptRootFolderName;
         public string SceneRootFolderPath;
+        public string MainSceneName = "01Main.unity";
+
+        public bool IsAutoDownload;
 
         public Text SingleSizeText;
         public Slider SingleSlider;
@@ -39,9 +43,6 @@ namespace Meow.Framework
 
         private void Awake()
         {
-            _mainGames.Add(ProjectName, this);
-            StartGameButton.gameObject.SetActive(false);
-            
             _updater = gameObject.AddComponent<MainUpdater>();
             _loader = gameObject.AddComponent<MainLoader>();
             _luaLoader = gameObject.AddComponent<LuaLoader>();
@@ -52,6 +53,18 @@ namespace Meow.Framework
 
         private IEnumerator Start()
         {
+            StartGameButton.gameObject.SetActive(false);
+            
+            _mainGames.Add(ProjectName, this);
+            if (IsAutoDownload)
+            {
+                yield return Download();
+                yield return Initialize();
+            }
+        }
+
+        private IEnumerator Download()
+        {
             _updater.Initialize(RemoteUrl, ProjectName, VersionFileName);
             
             yield return _updater.LoadAllVersionFiles();
@@ -60,7 +73,10 @@ namespace Meow.Framework
             _updateOperation = _updater.UpdateFromRemoteAsset();
             _totalCount = _updateOperation.RemainBundleCount;
             yield return _updateOperation;
-            
+        }
+
+        private IEnumerator Initialize()
+        {
             yield return _loader.Initialize(_updater.GetAssetbundleRootPath(true), _updater.GetManifestName());
             
             yield return _luaLoader.Initialize(ProjectName, _loader, LuaBundleName, LuaScriptRootFolderName);
@@ -70,7 +86,7 @@ namespace Meow.Framework
             StartGameButton.gameObject.SetActive(true);
             StartGameButton.onClick.AddListener(() =>
             {
-                LoadLevelAsync(Path.Combine(SceneRootFolderPath, "01Main.unity"));
+                LoadLevelAsync(Path.Combine(SceneRootFolderPath, MainSceneName));
             });
         }
 
@@ -115,6 +131,16 @@ namespace Meow.Framework
         {
             var mainGame = GetInstance(projectName);
             return mainGame._luaHelper;
+        }
+
+        public void StartUpdateCoroutine()
+        {
+            StartCoroutine(Download());
+        }
+        
+        public void StartInitializeCoroutine()
+        {
+            StartCoroutine(Initialize());
         }
 
     }

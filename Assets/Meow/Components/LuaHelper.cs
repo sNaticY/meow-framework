@@ -45,6 +45,11 @@ namespace Meow.Framework
             }));
             return op;
         }
+
+        public MainGame AddMainGame(GameObject go)
+        {
+            return go.AddComponent<MainGame>();
+        }
         
         private IEnumerator WaitForYieldDone(CustomYieldInstruction op, Action action)
         {
