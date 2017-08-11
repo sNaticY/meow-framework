@@ -4,7 +4,7 @@ namespace Meow.AssetLoader.Core
 {
     public class LoadManifestOperation : CustomYieldInstruction
     {
-        private string _manifestPath;
+        private readonly string _manifestPath;
         private WWW _www;
         
         public bool IsDone { get; private set; }
@@ -16,7 +16,11 @@ namespace Meow.AssetLoader.Core
 
         public AssetBundleManifest Manifest
         {
-            get{ return _www.assetBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest"); }
+            get
+            {
+                AssetBundle.UnloadAllAssetBundles(false);
+                return _www.assetBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+            }
         }
         
         public override bool keepWaiting

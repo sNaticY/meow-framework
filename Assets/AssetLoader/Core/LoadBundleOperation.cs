@@ -23,7 +23,7 @@ namespace Meow.AssetLoader.Core
         {
             _loader = loader;
             _assetbundleName = assetbundleName;
-            
+
 #if UNITY_EDITOR
             if (MainLoader.IsSimulationMode)
             {
@@ -64,7 +64,7 @@ namespace Meow.AssetLoader.Core
                 return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(assetPath);
             }
 #endif
-            return _www.assetBundle.LoadAsset<T>(assetPath);
+            return GetAssetBundle().LoadAsset<T>(assetPath);
         }
 
         public Dictionary<string, T> GetAllAssets<T>() where T : UnityEngine.Object
@@ -83,7 +83,7 @@ namespace Meow.AssetLoader.Core
             else
 #endif
             {
-                var assetPaths = _www.assetBundle.GetAllAssetNames();
+                var assetPaths = GetAssetBundle().GetAllAssetNames();
                 foreach (var path in assetPaths)
                 {
                     T asset = _www.assetBundle.LoadAsset<T>(path);
@@ -129,6 +129,16 @@ namespace Meow.AssetLoader.Core
                 }
                 return !IsDone;
             }
+        }
+
+        private AssetBundle GetAssetBundle()
+        {
+            LoadedBundle bundle;
+            if (_loader.LoadedBundles.TryGetValue(_assetbundleName, out bundle))
+            {
+                return bundle.AssetBundle;
+            }
+            return _www.assetBundle;
         }
     }
 }
