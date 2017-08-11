@@ -1,6 +1,7 @@
 ﻿using XLua;
 using System;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Meow.Framework
 {
@@ -106,7 +107,7 @@ namespace Meow.Framework
         private void _Initialize()
         {
             // 获取ScriptEnv
-            var result = MainGame.GetLuaLoader(ProjectName).DoString(LuaPath, "LuaBehaviour");
+            var result = MainGame.GetLuaLoader(ProjectName).DoString(LuaPath, LuaPath);
             Debug.Assert(result.Length > 0, string.Format("Lua controller file must return something! ({0}.lua)", LuaPath));
             var rf = result[0] as LuaFunction;
             var results = rf.Call();
