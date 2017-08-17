@@ -18,8 +18,9 @@ namespace Meow.AssetLoader.Core
         {
             get
             {
-                AssetBundle.UnloadAllAssetBundles(false);
-                return _www.assetBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+                var manifest = _www.assetBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+                _www.assetBundle.Unload(false);
+                return manifest;
             }
         }
         
