@@ -23,6 +23,7 @@ namespace Meow.Framework
         public string LuaScriptRootFolderName;
         public string SceneRootFolderPath;
         public string MainSceneName = "01Main.unity";
+        public string EntranceScenePath;
 
         public bool IsAutoDownload;
 
@@ -59,7 +60,10 @@ namespace Meow.Framework
             if (IsAutoDownload)
             {
                 yield return Download();
-                yield return Initialize();
+                StartGameButton.onClick.AddListener(() =>
+                {
+                    StartInitializeCoroutine(null);
+                });
             }
         }
 
@@ -73,6 +77,8 @@ namespace Meow.Framework
             _updateOperation = _updater.UpdateFromRemoteAsset();
             _totalCount = _updateOperation.RemainBundleCount;
             yield return _updateOperation;
+            
+            StartGameButton.gameObject.SetActive(true);
         }
 
         private IEnumerator Initialize()
@@ -83,11 +89,8 @@ namespace Meow.Framework
 
             _luaHelper.Initialize(_loader, _updater);
             
-            StartGameButton.gameObject.SetActive(true);
-            StartGameButton.onClick.AddListener(() =>
-            {
-                LoadLevelAsync(Path.Combine(SceneRootFolderPath, MainSceneName));
-            });
+            LoadLevelAsync(Path.Combine(SceneRootFolderPath, MainSceneName));
+            
         }
 
         private void Update()
@@ -114,6 +117,18 @@ namespace Meow.Framework
             StartCoroutine(op);
             return op;
         }
+        
+        public void ReturnToEntrance()
+        {
+            SceneManager.LoadScene(EntranceScenePath);
+            
+            foreach (var mainGame in _mainGames.Values)
+            {
+                mainGame._loader.UnLoadAssetBundles();
+                Destroy(mainGame.gameObject);
+            }
+            _mainGames.Clear();
+        }
 
         public static MainGame GetInstance(string projectName)
         {
@@ -137,9 +152,16 @@ namespace Meow.Framework
         {
             StartCoroutine(Download());
         }
-        
-        public void StartInitializeCoroutine()
+
+        public void StartInitializeCoroutine(string sourceProjectName)
         {
+            if (!string.IsNullOrEmpty(sourceProjectName))
+            {
+                var mainGame = _mainGames[sourceProjectName];
+                mainGame._loader.UnLoadAssetBundles();
+                _mainGames.Remove(sourceProjectName);
+                Destroy(mainGame.gameObject);
+            }
             StartCoroutine(Initialize());
         }
 
