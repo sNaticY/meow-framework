@@ -63,5 +63,14 @@ namespace Meow.AssetLoader
             var op = new LoadLevelOperation(this, bundlePath, levelName, isAddtive);
             return op;
         }
+        
+        public void UnLoadAssetBundles()
+        {
+            foreach (var bundle in LoadedBundles.Values)
+            {
+                bundle.AssetBundle.Unload(false);
+            }
+            LoadedBundles.Clear();
+        }
     }
 }
